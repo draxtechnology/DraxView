@@ -1,0 +1,131 @@
+@page "/"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@implements IDisposable
+@inject EventStore Store
+@inject MqttService Mqtt
+
+<PageTitle>Events - BMX</PageTitle>
+
+<div class="statusbar">
+    <span class="pill @(Mqtt.IsConnected ? "pill-ok" : "pill-bad")">
+        @(Mqtt.IsConnected ? "Broker connected" : "Broker offline") · @Mqtt.Broker
+    </span>
+    <span class="pill">@Store.TotalReceived events received</span>
+    <span class="pill">Last @(Mqtt.LastMessageLocal?.ToString("HH:mm:ss") ?? "–")</span>
+    @if (Mqtt.Panels.Count > 0)
+    {
+        <span class="pill">Panels: @string.Join(", ", Mqtt.Panels)</span>
+    }
+</div>
+
+<div class="toolbar">
+    <input class="filter" placeholder="Filter by panel, type, text or AMX ref" @bind="filter" @bind:event="oninput" />
+    <label class="check"><input type="checkbox" @bind="activeOnly" /> Active only</label>
+
+    <span class="spacer"></span>
+
+    <select @bind="controlPanel" class="panel-select" title="Panel to control">
+        @foreach (var p in Mqtt.Panels)
+        {
+            <option value="@p">@p</option>
+        }
+    </select>
+    <button class="btn btn-amber" disabled="@(!CanControl)" @onclick='() => SendAsync("SILENCE|0,0,0,0", "Silence")'>Silence</button>
+    <button class="btn btn-green" disabled="@(!CanControl)" @onclick='() => SendAsync("RESET|0,0,0,0", "Reset")'>Reset</button>
+    <button class="btn btn-quiet" @onclick="Store.Clear">Clear list</button>
+</div>
+
+@if (!string.IsNullOrEmpty(notice))
+{
+    <div class="notice">@notice</div>
+}
+
+<div class="table-wrap">
+    <table class="events">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Panel</th>
+                <th>State</th>
+                <th>Type</th>
+                <th>AMX ref</th>
+                <th>Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in Visible)
+            {
+                <tr class="row-@ev.Family">
+                    <td class="mono">@ev.ReceivedLocal.ToString("HH:mm:ss")</td>
+                    <td>@ev.Panel</td>
+                    <td><span class="state state-@(ev.On ? "on" : "off")">@(ev.On ? "ON" : "OFF")</span></td>
+                    <td>@ev.Type</td>
+                    <td class="mono">@ev.AmxRef</td>
+                    <td class="text">@ev.Text @(string.IsNullOrEmpty(ev.Text2) ? "" : "· " + ev.Text2) @(string.IsNullOrEmpty(ev.Text3) ? "" : "· " + ev.Text3)</td>
+                </tr>
+            }
+            @if (!Visible.Any())
+            {
+                <tr class="row-empty">
+                    <td colspan="6">@(Store.TotalReceived == 0 ? "Waiting for events from the service." : "Nothing matches the filter.")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private string filter = "";
+    private bool activeOnly;
+    private string controlPanel = "";
+    private string? notice;
+
+    private bool CanControl => Mqtt.IsConnected && !string.IsNullOrEmpty(controlPanel);
+
+    private IEnumerable<DraxEvent> Visible
+    {
+        get
+        {
+            var all = Store.Snapshot().AsEnumerable();
+            if (activeOnly) all = all.Where(e => e.On);
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                var f = filter.Trim();
+                all = all.Where(e =>
+                    e.Panel.Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                    e.Type.Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                    e.Text.Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                    e.Text2.Contains(f, StringComparison.OrdinalIgnoreCase) ||
+                    e.AmxRef.Contains(f, StringComparison.OrdinalIgnoreCase));
+            }
+            return all;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Store.Changed += OnChanged;
+        Mqtt.StateChanged += OnChanged;
+        controlPanel = Mqtt.Panels.FirstOrDefault() ?? "";
+    }
+
+    private void OnChanged()
+    {
+        if (string.IsNullOrEmpty(controlPanel))
+            controlPanel = Mqtt.Panels.FirstOrDefault() ?? "";
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SendAsync(string command, string label)
+    {
+        bool ok = await Mqtt.SendCommandAsync(controlPanel, command);
+        notice = ok ? $"{label} sent to {controlPanel} at {DateTime.Now:HH:mm:ss}" : $"{label} not sent: broker offline";
+    }
+
+    public void Dispose()
+    {
+        Store.Changed -= OnChanged;
+        Mqtt.StateChanged -= OnChanged;
+    }
+}

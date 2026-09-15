@@ -1,0 +1,29 @@
+@inherits LayoutComponentBase
+
+<div class="shell">
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-mark">BMX</span>
+            <span class="brand-sub">Drax Technology</span>
+        </a>
+        <nav class="topnav">
+            <NavLink href="/" Match="NavLinkMatch.All">Events</NavLink>
+            <NavLink href="/settings">Settings</NavLink>
+        </nav>
+        <div class="topbar-right">
+            <AuthorizeView>
+                <Authorized>
+                    <span class="who">@context.User.Identity?.Name</span>
+                    <form method="post" action="/logout" class="inline">
+                        <AntiforgeryToken />
+                        <button type="submit" class="btn btn-quiet">Sign out</button>
+                    </form>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </header>
+
+    <main class="content">
+        @Body
+    </main>
+</div>

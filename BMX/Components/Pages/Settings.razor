@@ -1,0 +1,77 @@
+@page "/settings"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@implements IDisposable
+@inject MqttService Mqtt
+@inject EventStore Store
+@inject UserStore Users
+@inject AuthenticationStateProvider AuthState
+
+<PageTitle>Settings - BMX</PageTitle>
+
+<h1>Settings</h1>
+
+<section class="card">
+    <h2>Broker</h2>
+    <dl class="kv">
+        <dt>Address</dt><dd class="mono">@Mqtt.Broker</dd>
+        <dt>Subscribed to</dt><dd class="mono">@Mqtt.TopicFilter</dd>
+        <dt>State</dt><dd>@(Mqtt.IsConnected ? "Connected" : "Not connected")@(Mqtt.LastError is null ? "" : " · " + Mqtt.LastError)</dd>
+        <dt>Panels seen</dt><dd>@(Mqtt.Panels.Count == 0 ? "none yet" : string.Join(", ", Mqtt.Panels))</dd>
+        <dt>Events received</dt><dd>@Store.TotalReceived</dd>
+        <dt>Log lines received</dt><dd>@Mqtt.LogLines</dd>
+    </dl>
+    <p class="hint">Broker address, port and topic prefix come from appsettings.json for now.</p>
+</section>
+
+<section class="card">
+    <h2>Your password</h2>
+    <div class="form-row">
+        <input type="password" placeholder="New password" @bind="newPassword" />
+        <button class="btn btn-primary" @onclick="ChangePasswordAsync">Change</button>
+    </div>
+    @if (!string.IsNullOrEmpty(pwNotice))
+    {
+        <div class="notice">@pwNotice</div>
+    }
+</section>
+
+<section class="card">
+    <h2>Accounts</h2>
+    <table class="plain">
+        <thead><tr><th>Username</th><th>Role</th></tr></thead>
+        <tbody>
+            @foreach (var (u, r) in Users.List())
+            {
+                <tr><td>@u</td><td>@r</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
+
+@code {
+    private string newPassword = "";
+    private string? pwNotice;
+
+    protected override void OnInitialized()
+    {
+        Mqtt.StateChanged += OnChanged;
+        Store.Changed += OnChanged;
+    }
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private async Task ChangePasswordAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        var name = state.User.Identity?.Name ?? "";
+        pwNotice = Users.SetPassword(name, newPassword) ? "Password changed." : "Password not changed.";
+        newPassword = "";
+    }
+
+    public void Dispose()
+    {
+        Mqtt.StateChanged -= OnChanged;
+        Store.Changed -= OnChanged;
+    }
+}

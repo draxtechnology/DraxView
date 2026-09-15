@@ -1,0 +1,81 @@
+@page "/login"
+@layout Layout.LoginLayout
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject UserStore Users
+@inject NavigationManager Nav
+
+<PageTitle>Sign in - BMX</PageTitle>
+
+<div class="login-card">
+    <div class="login-brand">
+        <span class="brand-mark">BMX</span>
+        <span class="brand-sub">Drax Technology</span>
+    </div>
+
+    <EditForm Model="Input" OnValidSubmit="SignInAsync" FormName="login" class="login-form">
+        <DataAnnotationsValidator />
+
+        <label for="username">Username</label>
+        <InputText id="username" @bind-Value="Input.Username" autocomplete="username" autofocus />
+
+        <label for="password">Password</label>
+        <InputText id="password" type="password" @bind-Value="Input.Password" autocomplete="current-password" />
+
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="form-error">@error</div>
+        }
+
+        <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    </EditForm>
+</div>
+
+@code {
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    public LoginModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private string? error;
+
+    private async Task SignInAsync()
+    {
+        if (!Users.Validate(Input.Username, Input.Password, out var role))
+        {
+            error = "Username or password not recognised.";
+            return;
+        }
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, Input.Username),
+            new(ClaimTypes.Role, role),
+        };
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(identity),
+            new AuthenticationProperties { IsPersistent = true });
+
+        var target = string.IsNullOrWhiteSpace(ReturnUrl) || ReturnUrl.StartsWith("login", StringComparison.OrdinalIgnoreCase)
+            ? "/"
+            : "/" + ReturnUrl.TrimStart('/');
+        Nav.NavigateTo(target, forceLoad: true);
+    }
+
+    public sealed class LoginModel
+    {
+        [Required]
+        public string Username { get; set; } = "";
+
+        [Required]
+        public string Password { get; set; } = "";
+    }
+}

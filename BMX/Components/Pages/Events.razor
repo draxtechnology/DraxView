@@ -5,18 +5,13 @@
 @inject EventStore Store
 @inject MqttService Mqtt
 
-<PageTitle>Events - BMX</PageTitle>
+<PageTitle>Events · BMX · Drax Technology</PageTitle>
 
 <div class="statusbar">
-    <span class="pill @(Mqtt.IsConnected ? "pill-ok" : "pill-bad")">
-        @(Mqtt.IsConnected ? "Broker connected" : "Broker offline") · @Mqtt.Broker
-    </span>
-    <span class="pill">@Store.TotalReceived events received</span>
-    <span class="pill">Last @(Mqtt.LastMessageLocal?.ToString("HH:mm:ss") ?? "–")</span>
-    @if (Mqtt.Panels.Count > 0)
-    {
-        <span class="pill">Panels: @string.Join(", ", Mqtt.Panels)</span>
-    }
+    <span class="led @(Mqtt.IsConnected ? "led-ok" : "led-bad")"><i></i>Broker</span>
+    <span class="led @(Mqtt.Panels.Count > 0 ? "led-ok" : "led-idle")"><i></i>Panels @(Mqtt.Panels.Count > 0 ? string.Join(", ", Mqtt.Panels) : "none")</span>
+    <span class="led @(Active > 0 ? "led-alarm" : "led-ok")"><i></i>@Active active</span>
+    <span class="status-meta">@Store.TotalReceived events · last @(Mqtt.LastMessageLocal?.ToString("HH:mm:ss") ?? "–") · @Mqtt.Broker</span>
 </div>
 
 <div class="toolbar">
@@ -32,7 +27,7 @@
         }
     </select>
     <button class="btn btn-amber" disabled="@(!CanControl)" @onclick='() => SendAsync("SILENCE|0,0,0,0", "Silence")'>Silence</button>
-    <button class="btn btn-green" disabled="@(!CanControl)" @onclick='() => SendAsync("RESET|0,0,0,0", "Reset")'>Reset</button>
+    <button class="btn btn-navy" disabled="@(!CanControl)" @onclick='() => SendAsync("RESET|0,0,0,0", "Reset")'>Reset</button>
     <button class="btn btn-quiet" @onclick="Store.Clear">Clear list</button>
 </div>
 
@@ -58,7 +53,7 @@
             {
                 <tr class="row-@ev.Family">
                     <td class="mono">@ev.ReceivedLocal.ToString("HH:mm:ss")</td>
-                    <td>@ev.Panel</td>
+                    <td class="caps">@ev.Panel</td>
                     <td><span class="state state-@(ev.On ? "on" : "off")">@(ev.On ? "ON" : "OFF")</span></td>
                     <td>@ev.Type</td>
                     <td class="mono">@ev.AmxRef</td>
@@ -82,6 +77,8 @@
     private string? notice;
 
     private bool CanControl => Mqtt.IsConnected && !string.IsNullOrEmpty(controlPanel);
+
+    private int Active => Store.Snapshot().Count(e => e.On && e.Family == "alarm");
 
     private IEnumerable<DraxEvent> Visible
     {

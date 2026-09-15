@@ -7,12 +7,15 @@
 @inject UserStore Users
 @inject NavigationManager Nav
 
-<PageTitle>Sign in - BMX</PageTitle>
+<PageTitle>Sign in · BMX · Drax Technology</PageTitle>
 
 <div class="login-card">
     <div class="login-brand">
-        <span class="brand-mark">BMX</span>
-        <span class="brand-sub">Drax Technology</span>
+        <DraxLogo Size="64" Stacked="true" />
+    </div>
+    <div class="login-product">
+        <span class="product-name">BMX</span>
+        <span class="product-tag">Alarm events display</span>
     </div>
 
     <EditForm Model="Input" OnValidSubmit="SignInAsync" FormName="login" class="login-form">
@@ -31,6 +34,8 @@
 
         <button type="submit" class="btn btn-primary btn-block">Sign in</button>
     </EditForm>
+
+    <div class="login-foot">Drax Technology</div>
 </div>
 
 @code {

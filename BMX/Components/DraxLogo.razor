@@ -1,0 +1,26 @@
+@* The Drax Technology mark (three stacked diamonds, orange centre) and
+   wordmark as inline SVG, so it is crisp at any size and needs no asset
+   download. Colours are the brand navy and orange lifted from DraxLogo.ico. *@
+
+<span class="drax-logo @(Stacked ? "drax-logo-stacked" : "")" style="--logo-size:@(Size)px">
+    <svg class="drax-mark" viewBox="0 0 256 240" width="@Size" height="@(Size * 240 / 256)" aria-hidden="true">
+        <g fill="none" stroke-width="13" stroke-linejoin="round" stroke-linecap="round">
+            <polygon points="128,14 236,78 128,142 20,78" stroke="#1b2540" />
+            <polyline points="46,116 20,132 128,196 236,132 210,116" stroke="#e0523a" />
+            <polyline points="46,146 20,162 128,226 236,162 210,146" stroke="#1b2540" />
+        </g>
+    </svg>
+    @if (ShowWordmark)
+    {
+        <span class="drax-wordmark">
+            <span class="drax-word-drax">Drax</span>
+            <span class="drax-word-tech">Technology</span>
+        </span>
+    }
+</span>
+
+@code {
+    [Parameter] public int Size { get; set; } = 28;
+    [Parameter] public bool ShowWordmark { get; set; } = true;
+    [Parameter] public bool Stacked { get; set; }
+}

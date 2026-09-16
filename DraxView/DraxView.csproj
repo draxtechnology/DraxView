@@ -7,8 +7,8 @@
     <RootNamespace>DraxView</RootNamespace>
     <AssemblyName>DraxView</AssemblyName>
     <!-- Same convention as the service (AssemblyInfo 1.0.0.N + Product.wxs 1.0.N) and the client (FileVersion 1.0.0.N): bump both together. -->
-    <Version>1.0.2</Version>
-    <FileVersion>1.0.0.2</FileVersion>
+    <Version>1.0.3</Version>
+    <FileVersion>1.0.0.3</FileVersion>
     <Product>DraxView</Product>
     <Company>Drax Technology</Company>
   </PropertyGroup>

@@ -7,11 +7,15 @@ public sealed class EventOptions
     public int MaxRetained { get; set; } = 1000;
 }
 
-// In-memory, newest-first, bounded. Enough for a feel-for-effort build; the
+// Two views of the same feed. The log is every event, newest first, bounded.
+// The active list is current state, the way AMX shows it: an ON event raises a
+// condition, the matching OFF (a device clearing, or the panel sending its
+// clears after a reset) removes it. Enough for a feel-for-effort build; the
 // real thing wants a database, which doubles as event history for reports.
 public sealed class EventStore
 {
     private readonly LinkedList<DraxEvent> _events = new();
+    private readonly Dictionary<string, DraxEvent> _active = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _lock = new();
     private readonly int _max;
     private long _seq;
@@ -33,6 +37,9 @@ public sealed class EventStore
         {
             _events.AddFirst(ev);
             while (_events.Count > _max) _events.RemoveLast();
+
+            if (ev.On) _active[ev.ConditionKey] = ev;
+            else _active.Remove(ev.ConditionKey);
         }
         Changed?.Invoke();
     }
@@ -42,6 +49,19 @@ public sealed class EventStore
         lock (_lock) return _events.ToList();
     }
 
+    // Conditions still raised, newest first.
+    public IReadOnlyList<DraxEvent> ActiveSnapshot()
+    {
+        lock (_lock) return _active.Values.OrderByDescending(e => e.Seq).ToList();
+    }
+
+    public int ActiveCount
+    {
+        get { lock (_lock) return _active.Count; }
+    }
+
+    // Clears the log only. The active list is what the panel says is raised;
+    // it comes down when the panel clears it, not from a button here.
     public void Clear()
     {
         lock (_lock) _events.Clear();

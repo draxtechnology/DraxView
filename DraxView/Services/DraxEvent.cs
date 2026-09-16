@@ -25,6 +25,12 @@ public sealed record DraxEvent(
 {
     public string AmxRef => $"N{Node} L{Loop} D{Input}";
 
+    // One condition on one point: an ON event raises it, the matching OFF clears it.
+    // Same identity AMX keys on - the event number less its on/off bit - so a fire
+    // and a fault on the same device are two conditions, and a panel reset that
+    // sends the OFFs takes them off the active list one by one.
+    public string ConditionKey => $"{Panel}|{InputType}|{Node}|{Loop}|{Input}";
+
     // Same families MqttMonitor colours; the CSS class carries it to the row.
     public string Family
     {

@@ -10,13 +10,16 @@
 <div class="statusbar">
     <span class="led @(Mqtt.IsConnected ? "led-ok" : "led-bad")"><i></i>Broker</span>
     <span class="led @(Mqtt.Panels.Count > 0 ? "led-ok" : "led-idle")"><i></i>Panels @(Mqtt.Panels.Count > 0 ? string.Join(", ", Mqtt.Panels) : "none")</span>
-    <span class="led @(Active > 0 ? "led-alarm" : "led-ok")"><i></i>@Active active</span>
+    <span class="led @(ActiveAlarms > 0 ? "led-alarm" : Active > 0 ? "led-idle" : "led-ok")"><i></i>@Active active</span>
     <span class="status-meta">@Store.TotalReceived events · last @(Mqtt.LastMessageLocal?.ToString("HH:mm:ss") ?? "–") · @Mqtt.Broker</span>
 </div>
 
 <div class="toolbar">
     <input class="filter" placeholder="Filter by panel, type, text or AMX ref" @bind="filter" @bind:event="oninput" />
-    <label class="check"><input type="checkbox" @bind="activeOnly" /> Active only</label>
+    <div class="view-toggle" role="group" aria-label="View">
+        <button class="btn btn-toggle @(showHistory ? "" : "is-on")" @onclick="() => showHistory = false">Active</button>
+        <button class="btn btn-toggle @(showHistory ? "is-on" : "")" @onclick="() => showHistory = true">History</button>
+    </div>
 
     <span class="spacer"></span>
 
@@ -28,7 +31,10 @@
     </select>
     <button class="btn btn-amber" disabled="@(!CanControl)" @onclick='() => SendAsync("SILENCE|0,0,0,0", "Silence")'>Silence</button>
     <button class="btn btn-navy" disabled="@(!CanControl)" @onclick='() => SendAsync("RESET|0,0,0,0", "Reset")'>Reset</button>
-    <button class="btn btn-quiet" @onclick="Store.Clear">Clear list</button>
+    @if (showHistory)
+    {
+        <button class="btn btn-quiet" @onclick="Store.Clear">Clear history</button>
+    }
 </div>
 
 @if (!string.IsNullOrEmpty(notice))
@@ -63,7 +69,7 @@
             @if (!Visible.Any())
             {
                 <tr class="row-empty">
-                    <td colspan="6">@(Store.TotalReceived == 0 ? "Waiting for events from the service." : "Nothing matches the filter.")</td>
+                    <td colspan="6">@EmptyMessage</td>
                 </tr>
             }
         </tbody>
@@ -72,20 +78,26 @@
 
 @code {
     private string filter = "";
-    private bool activeOnly;
+    private bool showHistory;
     private string controlPanel = "";
     private string? notice;
 
     private bool CanControl => Mqtt.IsConnected && !string.IsNullOrEmpty(controlPanel);
 
-    private int Active => Store.Snapshot().Count(e => e.On && e.Family == "alarm");
+    private int Active => Store.ActiveCount;
+    private int ActiveAlarms => Store.ActiveSnapshot().Count(e => e.Family == "alarm");
+
+    private string EmptyMessage =>
+        Store.TotalReceived == 0 ? "Waiting for events from the service."
+        : !string.IsNullOrWhiteSpace(filter) ? "Nothing matches the filter."
+        : showHistory ? "History is empty."
+        : "No active conditions.";
 
     private IEnumerable<DraxEvent> Visible
     {
         get
         {
-            var all = Store.Snapshot().AsEnumerable();
-            if (activeOnly) all = all.Where(e => e.On);
+            var all = (showHistory ? Store.Snapshot() : Store.ActiveSnapshot()).AsEnumerable();
             if (!string.IsNullOrWhiteSpace(filter))
             {
                 var f = filter.Trim();

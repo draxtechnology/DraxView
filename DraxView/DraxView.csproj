@@ -6,7 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>DraxView</RootNamespace>
     <AssemblyName>DraxView</AssemblyName>
-    <Version>0.1.0</Version>
+    <!-- Same convention as the service (AssemblyInfo 1.0.0.N + Product.wxs 1.0.N) and the client (FileVersion 1.0.0.N): bump both together. -->
+    <Version>1.0.1</Version>
+    <FileVersion>1.0.0.1</FileVersion>
     <Product>DraxView</Product>
     <Company>Drax Technology</Company>
   </PropertyGroup>

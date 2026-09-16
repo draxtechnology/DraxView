@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace BMX.Services;
+namespace DraxView.Services;
 
 public sealed class EventOptions
 {

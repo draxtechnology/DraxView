@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace BMX.Services;
+namespace DraxView.Services;
 
 // One normalised event as the service publishes it on drax/<panel>/event
 // (MqttTransfer.PublishEvent). The decoded block is the AMX reference:

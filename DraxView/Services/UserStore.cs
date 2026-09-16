@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace BMX.Services;
+namespace DraxView.Services;
 
 // Local operator accounts in users.json next to the app. PBKDF2 hashes, no
 // external identity provider: the display has to work with no network at all.

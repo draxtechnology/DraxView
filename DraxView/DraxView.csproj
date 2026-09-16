@@ -4,10 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>BMX</RootNamespace>
-    <AssemblyName>BMX</AssemblyName>
+    <RootNamespace>DraxView</RootNamespace>
+    <AssemblyName>DraxView</AssemblyName>
     <Version>0.1.0</Version>
-    <Product>BMX</Product>
+    <Product>DraxView</Product>
     <Company>Drax Technology</Company>
   </PropertyGroup>
 

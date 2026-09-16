@@ -1,4 +1,4 @@
-/* BMX · Drax Technology
+/* DraxView · Drax Technology
    Brand: navy #1b2540 and orange #e0523a from the Drax mark; the appliance
    face look — white surfaces, a dark display, letterspaced uppercase labels,
    small status LEDs. */
@@ -63,7 +63,7 @@ h2 {
 .drax-word-tech { color: var(--navy); font-size: calc(var(--logo-size) * .48); font-weight: 500; }
 
 .product { display: inline-flex; flex-direction: column; line-height: 1.05; padding-left: 14px; border-left: 1px solid var(--line); }
-.product-name { font-weight: 700; font-size: 17px; letter-spacing: .12em; color: var(--navy); }
+.product-name { font-weight: 700; font-size: 17px; letter-spacing: .03em; color: var(--navy); }
 .product-tag { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 
 /* ---- shell ---- */
@@ -245,7 +245,7 @@ table.plain th { color: var(--muted); font-size: 10px; letter-spacing: .14em; te
 }
 .login-brand { display: flex; justify-content: center; margin-bottom: 18px; }
 .login-product { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 26px; }
-.login-product .product-name { font-size: 22px; letter-spacing: .18em; }
+.login-product .product-name { font-size: 24px; letter-spacing: .04em; }
 .login-form { display: flex; flex-direction: column; gap: 6px; }
 .login-form label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 10px; }
 .login-form input { padding: 10px 12px; }
@@ -258,4 +258,40 @@ table.plain th { color: var(--muted); font-size: 10px; letter-spacing: .14em; te
     letter-spacing: .18em;
     text-transform: uppercase;
     color: var(--muted);
+}
+
+/* ---- responsive ---- */
+@media (max-width: 900px) {
+    .filter { min-width: 0; flex: 1 1 220px; }
+    .topbar { gap: 14px; padding: 0 14px; }
+    .topnav { margin-left: 0; }
+    .status-meta { margin-left: 0; flex-basis: 100%; }
+    .card { max-width: none; }
+}
+
+@media (max-width: 640px) {
+    html, body { font-size: 15px; }
+    .topbar { height: auto; flex-wrap: wrap; padding: 10px 14px; row-gap: 8px; }
+    .topbar-brand .drax-wordmark { display: none; }
+    .product { padding-left: 10px; }
+    .product-tag { display: none; }
+    .topbar-right { margin-left: auto; }
+    .who { display: none; }
+    .content { padding: 14px; }
+    .statusbar { gap: 12px 18px; padding: 10px 14px; }
+    .toolbar { gap: 6px; }
+    .toolbar .spacer { display: none; }
+    .toolbar .btn, .panel-select { flex: 1 1 auto; }
+    .filter { flex-basis: 100%; }
+    table.events th, table.events td { padding: 8px 10px; }
+    table.events th:nth-child(4), table.events td:nth-child(4) { display: none; } /* Type: colour carries it */
+    .kv { grid-template-columns: 1fr; gap: 2px 0; }
+    .kv dt { margin-top: 8px; }
+    .form-row { flex-direction: column; }
+    .login-card { width: min(380px, 92vw); padding: 28px 22px 20px; }
+    .footer { flex-wrap: wrap; gap: 6px 10px; }
+}
+
+@media (max-width: 400px) {
+    table.events th:nth-child(2), table.events td:nth-child(2) { display: none; } /* Panel: status strip shows it */
 }

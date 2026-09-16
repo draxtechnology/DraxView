@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 using MQTTnet;
 using MQTTnet.Protocol;
 
-namespace BMX.Services;
+namespace DraxView.Services;
 
 public sealed class MqttOptions
 {
@@ -50,7 +50,7 @@ public sealed class MqttService : BackgroundService
     {
         var options = new MqttClientOptionsBuilder()
             .WithTcpServer(_opt.Broker, _opt.Port)
-            .WithClientId($"BMX-{Environment.ProcessId}")
+            .WithClientId($"DraxView-{Environment.ProcessId}")
             .WithCleanSession()
             .Build();
 

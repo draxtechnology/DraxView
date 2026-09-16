@@ -7,25 +7,25 @@
 @inject UserStore Users
 @inject NavigationManager Nav
 
-<PageTitle>Sign in · BMX · Drax Technology</PageTitle>
+<PageTitle>Sign in · DraxView · Drax Technology</PageTitle>
 
 <div class="login-card">
     <div class="login-brand">
         <DraxLogo Size="64" Stacked="true" />
     </div>
     <div class="login-product">
-        <span class="product-name">BMX</span>
+        <span class="product-name">DraxView</span>
         <span class="product-tag">Alarm events display</span>
     </div>
 
-    <EditForm Model="Input" OnValidSubmit="SignInAsync" FormName="login" class="login-form">
+    <EditForm Model="Input!" OnValidSubmit="SignInAsync" FormName="login" class="login-form">
         <DataAnnotationsValidator />
 
         <label for="username">Username</label>
-        <InputText id="username" @bind-Value="Input.Username" autocomplete="username" autofocus />
+        <InputText id="username" @bind-Value="Input!.Username" autocomplete="username" autofocus />
 
         <label for="password">Password</label>
-        <InputText id="password" type="password" @bind-Value="Input.Password" autocomplete="current-password" />
+        <InputText id="password" type="password" @bind-Value="Input!.Password" autocomplete="current-password" />
 
         @if (!string.IsNullOrEmpty(error))
         {
@@ -43,7 +43,9 @@
     public HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    public LoginModel Input { get; set; } = new();
+    public LoginModel? Input { get; set; }
+
+    protected override void OnInitialized() => Input ??= new();
 
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
@@ -52,7 +54,7 @@
 
     private async Task SignInAsync()
     {
-        if (!Users.Validate(Input.Username, Input.Password, out var role))
+        if (!Users.Validate(Input!.Username, Input.Password, out var role))
         {
             error = "Username or password not recognised.";
             return;

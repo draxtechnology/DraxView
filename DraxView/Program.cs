@@ -1,9 +1,9 @@
-using BMX.Components;
-using BMX.Services;
+using DraxView.Components;
+using DraxView.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
-// BMX - a self-contained operator display for the Drax Technology service.
+// DraxView - a self-contained operator display for the Drax Technology service.
 // One process: Kestrel serves the pages, MQTTnet subscribes to the service's
 // event mirror, and controls go back on the same broker. Nothing here needs
 // the internet; the browser is only the screen.
@@ -18,7 +18,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.LoginPath = "/login";
         o.ExpireTimeSpan = TimeSpan.FromHours(12);
         o.SlidingExpiration = true;
-        o.Cookie.Name = "bmx.auth";
+        o.Cookie.Name = "draxview.auth";
     });
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();

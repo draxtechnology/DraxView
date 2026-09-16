@@ -274,7 +274,7 @@ table.plain th { color: var(--muted); font-size: 10px; letter-spacing: .14em; te
     .topbar { height: auto; flex-wrap: wrap; padding: 10px 14px; row-gap: 8px; }
     .topbar-brand .drax-wordmark { display: none; }
     .product { padding-left: 10px; }
-    .product-tag { display: none; }
+    .topbar .product-tag { display: none; }
     .topbar-right { margin-left: auto; }
     .who { display: none; }
     .content { padding: 14px; }

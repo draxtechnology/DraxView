@@ -5,7 +5,6 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
 @inject UserStore Users
-@inject NavigationManager Nav
 
 <PageTitle>Sign in · DraxView · Drax Technology</PageTitle>
 
@@ -74,7 +73,10 @@
         var target = string.IsNullOrWhiteSpace(ReturnUrl) || ReturnUrl.StartsWith("login", StringComparison.OrdinalIgnoreCase)
             ? "/"
             : "/" + ReturnUrl.TrimStart('/');
-        Nav.NavigateTo(target, forceLoad: true);
+        // This page is statically rendered from a form post, so redirect at the HTTP level.
+        // NavigationManager.NavigateTo would work too, but on a static page it signals the
+        // redirect by throwing NavigationException, which the Visual Studio debugger stops on.
+        HttpContext.Response.Redirect(target);
     }
 
     public sealed class LoginModel
